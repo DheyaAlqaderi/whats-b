@@ -44,10 +44,11 @@ app.use('/message', require('./routes/message'));
 // Logger
 const { logger } = require('./utils/logger');
 
-const HOST = process.env.HOST || 'localhost';
+const HOST = '0.0.0.0';
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, HOST, () => {
   logger.info(`Server running at http://${HOST}:${PORT}/`);
 });
+
 
 module.exports = app;
