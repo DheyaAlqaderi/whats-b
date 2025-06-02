@@ -59,7 +59,8 @@ app.listen(PORT, HOST, (err) => {
     logger.error('Server failed to start:', err);
     process.exit(1);
   }
-  logger.info(`Server running at http://${HOST}:${PORT}/`);
+  const displayHost = HOST === '0.0.0.0' ? 'localhost' : HOST;
+  logger.info(`Server running at http://${displayHost}:${PORT}/`);
 });
 
 module.exports = app;
