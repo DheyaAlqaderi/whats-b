@@ -34,21 +34,32 @@ const corsOptions = {
 };
 app.use(cors(corsOptions));
 
+// Test route
+app.get('/', (req, res) => {
+  res.send('Hello Railway!');
+});
+
 // Routes
 app.use('/session', require('./routes/session'));
 app.use('/message', require('./routes/message'));
 
-// 404
-// app.use((req, res) => { res.status(404).send(null); });
+// 404 handler
+app.use((req, res) => {
+  res.status(404).send({ error: 'Not Found' });
+});
 
 // Logger
 const { logger } = require('./utils/logger');
 
 const HOST = '0.0.0.0';
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, HOST, () => {
+
+app.listen(PORT, HOST, (err) => {
+  if (err) {
+    logger.error('Server failed to start:', err);
+    process.exit(1);
+  }
   logger.info(`Server running at http://${HOST}:${PORT}/`);
 });
-
 
 module.exports = app;
