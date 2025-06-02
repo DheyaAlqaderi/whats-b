@@ -1,62 +1,50 @@
 require('dotenv').config();
-
-console.log('Starting server with environment variables:');
-console.log('HOST =', process.env.HOST);
-console.log('PORT =', process.env.PORT);
-console.log('ENVIRONMENT =', process.env.ENVIRONMENT);
-console.log('ACCESS_TOKEN_SECRET set?', !!process.env.ACCESS_TOKEN_SECRET);
-console.log('WEBHOOK_URL =', process.env.WEBHOOK_URL);
-
 const express = require('express');
 const cors = require('cors');
+const { logger } = require('./utils/logger'); // Make sure this exists
 
 const app = express();
+
+// Middlewares
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-// Error Handler
+// CORS config
+app.use(cors({
+  origin: '*',
+  methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true,
+}));
+
+// Custom middleware for errors/responses
 const errorHandler = require('./middlewares/errorHandler');
-
-app.use((req, res, next) => {
-  res.sendError = errorHandler.bind(null, req, res);
-  next();
-});
-
-// Response Handler
 const responseHandler = require('./middlewares/responseHandler');
 
 app.use((req, res, next) => {
+  res.sendError = errorHandler.bind(null, req, res);
   res.sendResponse = responseHandler.bind(null, res);
   next();
 });
 
-// CORS
-const corsOptions = {
-  origin: '*',
-  methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true,
-  preflightContinue: false,
-  optionsSuccessStatus: 204,
-};
-app.use(cors(corsOptions));
-
 // Routes
+app.get('/', (req, res) => {
+  res.send('🚀 API is working!');
+});
+
 app.use('/session', require('./routes/session'));
 app.use('/message', require('./routes/message'));
 
-// 404
-// app.use((req, res) => { res.status(404).send(null); });
+// 404 Handler
+app.use((req, res) => {
+  res.status(404).send({ error: 'Not Found' });
+});
 
-// Logger
-const { logger } = require('./utils/logger');
-
-const HOST = process.env.HOST || 'localhost';
+// Start server
 const PORT = process.env.PORT || 3000;
 
-app.listen(PORT, HOST, () => {
-  logger.info(`Server running at http://${HOST}:${PORT}/`);
+app.listen(PORT, () => {
+  logger.info(`Server running on port ${PORT}`);
 });
 
 module.exports = app;
-
