@@ -1,5 +1,12 @@
 require('dotenv').config();
 
+console.log('Starting server with environment variables:');
+console.log('HOST =', process.env.HOST);
+console.log('PORT =', process.env.PORT);
+console.log('ENVIRONMENT =', process.env.ENVIRONMENT);
+console.log('ACCESS_TOKEN_SECRET set?', !!process.env.ACCESS_TOKEN_SECRET);
+console.log('WEBHOOK_URL =', process.env.WEBHOOK_URL);
+
 const express = require('express');
 const cors = require('cors');
 
@@ -34,33 +41,22 @@ const corsOptions = {
 };
 app.use(cors(corsOptions));
 
-// Test route
-app.get('/', (req, res) => {
-  res.send('Hello Railway!');
-});
-
 // Routes
 app.use('/session', require('./routes/session'));
 app.use('/message', require('./routes/message'));
 
-// 404 handler
-app.use((req, res) => {
-  res.status(404).send({ error: 'Not Found' });
-});
+// 404
+// app.use((req, res) => { res.status(404).send(null); });
 
 // Logger
 const { logger } = require('./utils/logger');
 
-const HOST = '0.0.0.0';
+const HOST = process.env.HOST || 'localhost';
 const PORT = process.env.PORT || 3000;
 
-app.listen(PORT, HOST, (err) => {
-  if (err) {
-    logger.error('Server failed to start:', err);
-    process.exit(1);
-  }
-  const displayHost = HOST === '0.0.0.0' ? 'localhost' : HOST;
-  logger.info(`Server running at http://${displayHost}:${PORT}/`);
+app.listen(PORT, HOST, () => {
+  logger.info(`Server running at http://${HOST}:${PORT}/`);
 });
 
 module.exports = app;
+
